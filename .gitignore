@@ -1,0 +1,12 @@
+*.txt
+*.pyc
+*.xml
+*.py3
+*.ods
+.idea
+*.pdf
+*.ppen
+venv
+.luckybackup-snapshots
+*.gfw
+__pycahe__
