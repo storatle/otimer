@@ -114,12 +114,16 @@ class PurplePen:
                             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
 
         for cc in root.iter('course-control'):
-            next = None
+            variation = []
             next = None
             #Finner neste post
             for nxt in cc.iter('next'):
                 next = (nxt.get('course-control'))
-            order.append((cc.attrib.get('id'), next, cc.attrib.get('control')))
+            for var in cc.iter('variation'):
+                variation.append(var.get('course-control'))
+            variation = tuple(variation)
+            variation = (cc.attrib.get('variation'), cc.attrib.get('variation-end'), variation)
+            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), variation))
 
         for course in courses:
             course.set_order(order)
@@ -145,6 +149,7 @@ class Course:
         while next_ctrl:
             for control in order:
                 if control[0] == next_ctrl:
+                    # her må du sjekke om det er lagt inn en variation
                     self.order.append(control[2])
                     next_ctrl = control[1]
                     break
@@ -188,6 +193,7 @@ class Control:
         self.x = ctrl[2]
         self.y = ctrl[3]
         self.kind = ctrl[4]
+        #self.variation =
 
 
 

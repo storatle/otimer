@@ -197,6 +197,11 @@ class Ecard:
         item = output[-2]
         print('Post ' + 'F ' + ':  ' + set_time(item[2]) + '  ' + set_time(item[1]) + '  ' + str(item[0]))
 
+    def codes(self):
+        return self.codes()
+
+
+
 
 def main():
     brikke = Ecard()

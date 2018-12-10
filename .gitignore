@@ -10,3 +10,5 @@ venv
 .luckybackup-snapshots
 *.gfw
 __pycahe__
+koder.py
+test.py
