@@ -8,6 +8,7 @@ import ecard
 
 
 
+
 ec = ecard.Ecard
 
 mp = map.PurplePen

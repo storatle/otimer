@@ -92,6 +92,7 @@ class PurplePen:
         #chain = []
         courses = []
         order = []
+        variations = []
 
         for event in root.iter('event'):
             for map in event.iter('map'):
@@ -114,21 +115,39 @@ class PurplePen:
                             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
 
         for cc in root.iter('course-control'):
-            variation = []
+            #variation = []
+            vr = []
             next = None
             #Finner neste post
             for nxt in cc.iter('next'):
                 next = (nxt.get('course-control'))
             for var in cc.iter('variation'):
-                variation.append(var.get('course-control'))
-            variation = tuple(variation)
-            variation = (cc.attrib.get('variation'), cc.attrib.get('variation-end'), variation)
-            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), variation))
+                vr.append(var.get('course-control')) # Sjekker om det er en variation
+
+            if vr:
+                vr = tuple(vr)
+                variations.append(Variation((cc.attrib.get('variation'), cc.attrib.get('variation-end'), vr)))
+
+            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
 
         for course in courses:
             course.set_order(order)
             course.set_codes(controls)
             course.set_leg_length(controls)
+
+
+class Variation:
+
+    def __init__(self, var):
+
+        self.type = var[0]
+        self.end = var[1]
+        #self.end = var[]
+        self.var = []
+        for vr in var[2][1:]:
+            self.var.append(vr)
+
+
 
 
 class Course:
@@ -146,13 +165,25 @@ class Course:
 
     def set_order(self, order):
         next_ctrl = self.first_ctrl
+        loop = False
+        n = 1
         while next_ctrl:
             for control in order:
                 if control[0] == next_ctrl:
-                    # her må du sjekke om det er lagt inn en variation
-                    self.order.append(control[2])
-                    next_ctrl = control[1]
-                    break
+                    if control[3] == 'loop'and not loop:  # Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
+                        if n < len(control[3][2]): # Denne er feil. *Må sjekke variations med riktig loop og riktig endpost
+                            next_ctrl = control[3][2][n] # Her henter jeg første variasjon, men jeg må også hente 2 og 3 versjon slik at jeg får alle sløyfene
+                            n += 1
+
+                        else:
+                            n = 1
+                        loop = True
+                        break
+                    else:
+                        self.order.append(control[2])
+                        next_ctrl = control[1]
+                        loop = False
+                        break
 
     def set_codes(self, controls):
 
