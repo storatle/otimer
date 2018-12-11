@@ -73,6 +73,7 @@ class PurplePen:
     def __init__(self, filename):
 
         self.read_ppen(filename)
+        self.set_courses()
 
 
     def read_ppen(self,filename):
@@ -87,11 +88,11 @@ class PurplePen:
 
         #Henter data fra Purple Pen fila
         #ctrl = []
-        controls = []
+        self.controls = []
         #crs = []
         #chain = []
-        courses = []
-        order = []
+        self.courses = []
+        self.order = []
 
         for event in root.iter('event'):
             for map in event.iter('map'):
@@ -104,13 +105,13 @@ class PurplePen:
             for loc in ctrl.iter('location'):
                 x = loc.attrib.get('x')
                 y = loc.attrib.get('y')
-            controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
+            self.controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
 
             #controls = sorted(controls, key=lambda x: x.id)
         # Leser inn løypene
         for crs in root.iter('course'): # Mulig at jeg bør legge inn dette i en loop
 
-            courses.append(Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
+            self.courses.append(Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
                             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
 
         for cc in root.iter('course-control'):
@@ -123,12 +124,16 @@ class PurplePen:
                 variation.append(var.get('course-control'))
             variation = tuple(variation)
             variation = (cc.attrib.get('variation'), cc.attrib.get('variation-end'), variation)
-            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), variation))
+            self.order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), variation))
 
-        for course in courses:
-            course.set_order(order)
-            course.set_codes(controls)
-            course.set_leg_length(controls)
+    def set_courses(self):
+
+        for course in self.courses:
+            course.set_order(self.order)
+            course.set_codes(self.controls)
+            course.set_leg_length(self.controls)
+
+
 
 
 class Course:
@@ -166,6 +171,7 @@ class Course:
                     break
         del self.codes[0]
         self.codes[-1] = 100
+        self.codes = [int(x) for x in self.codes]
 
     def set_leg_length(self,controls):
         self.dl = []
@@ -231,11 +237,11 @@ def code_list(order,controls):
         #         ppen.append(float(printarea.attrib.get('page-width')))
         #         ppen.append(float(printarea.attrib.get('page-height')))
 
-def main():
-
-    map = PurplePen('course3.ppen')
-
-main()
+# def main():
+#
+#     map = PurplePen('course.ppen')
+#
+# main()
 
 #------------------------Gammelt grums --------------------------
 # Her ligger data for Melhuskartene
