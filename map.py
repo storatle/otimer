@@ -150,6 +150,8 @@ class Variation:
 
 
 
+
+
 class Course:
 
     def __init__(self, crs):
@@ -171,6 +173,8 @@ class Course:
             for control in order:
                 if control[0] == next_ctrl:
                     if control[3] == 'loop'and not loop:  # Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
+                        # Sett inn variation
+
                         if n < len(control[3][2]): # Denne er feil. *Må sjekke variations med riktig loop og riktig endpost
                             next_ctrl = control[3][2][n] # Her henter jeg første variasjon, men jeg må også hente 2 og 3 versjon slik at jeg får alle sløyfene
                             n += 1
@@ -225,9 +229,6 @@ class Control:
         self.y = ctrl[3]
         self.kind = ctrl[4]
         #self.variation =
-
-
-
 
 
 def code_list(order,controls):
