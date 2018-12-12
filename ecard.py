@@ -71,20 +71,21 @@ class Ecard:
         #self.get_codes()
         self.get_codes_and_times()
 
-        self.print()
+        #self.print()
 
     def read_ecard(self):
         # Denne her må sette opp slik at jeg leser direkte fra serieport
         # Bruk read line
 
         # brikkenr = br211419
-        # brikkenr = br222072
         brikkenr = br215066
+        # brikkenr = br222072
+
         # brikkenr = br211421
         for byte in brikkenr:
             self.dump.append(byte)
             # print(byte)
-            print(hex(byte))
+            #print(hex(byte))
 
         self.dump
 
