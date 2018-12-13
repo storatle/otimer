@@ -3,15 +3,60 @@
 
 import serial
 
-import map
-import ecard
+import map as mp
+import ecard as ec
+
+# Lese inn fra brikke kontinuerlig
+# Lag ny brikke
+
+brikke = ec.Ecard()
+
+
+# Henter inn løyper fra kartet. Denne inneholder alle løyper
+
+kart = mp.PurplePen('course.ppen')
 
 
 
+def check_codes(brikke, kart):
 
-ec = ecard.Ecard
+    codes_ec = brikke.codes
+    ind = 0
+    chk = []
+    correct = False
+    for course in kart.courses:
+        codes = course.code_list()
+        for code in codes:
+            if code in codes_ec[ind:]:
+                ind = ind + codes_ec[ind:].index(code)+1
+                chk.append(code)
 
-mp = map.PurplePen
+        if chk == codes:
+            correct = True
+
+    print(chk)
+    print(codes_ec)
+    print(codes)
+
+    return correct
+
+
+
+    #codes_mp = kart.courses[0].code_list()
+
+
+
+def main():
+    if check_codes(brikke, kart):
+        brikke.print()
+    else:
+        print('Feil')
+
+
+main()
+
+
+
 
 
 # Her skal du lage en snutt som sjekker lest ecard mot koder fra map
