@@ -8,16 +8,17 @@ import sys
 #from wand.image import Image
 
 
-class Xml:
+class fromXml:
 
     def __init__(self, filename):
         self.read_xml(filename)
+
     # Denne er tatt fra worldfile.py
-    def read_xml(filnavn):
+    def read_xml(self, filnavn):
 
         # Henter inn data fra IOF utveklsingsfil
         try:
-            tree = ET.parse(filnavn+".xml")
+            tree = ET.parse(filnavn)
 
         except:
             sys.exit("Oops! Har du riktig IOF utvekslingsfil (.xml) i katalogen? ")
@@ -36,15 +37,13 @@ class Xml:
             map.append(float(mapinfo[1].attrib.get('x')))
             map.append(float(mapinfo[1].attrib.get('y')))
 
+        #Her må jeg legge inn alle controller.
         for control in root.iter('Control'):
-            for controlcode in control.iter('ControlCode'):
-                #Henter inn posisjon for "Dummypost i øverste venstre hjørne
-                if controlcode.text=='999':
-                    for i in range(1, 3):
-                        ctrl.append(float(control[i].attrib.get('x')))
-                        ctrl.append(float(control[i].attrib.get('y')))
+            code = control[0].text
+            x = control[2].attri('x')
+            y = control[2].attri('y')
 
-            # Du må lage en sjekk på om kontrollposten finnes. Eller om det er gitt riktig kode 999. Eventuelt så kan du lage en rutine som sjekker om det er en post i øverste venstre hjørne
+            self.controls.append(Control((0, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'xml')))
 
         for startpoint in root.iter('StartPoint'):
             for startpointcode in startpoint.iter('StartPointCode'):
@@ -54,21 +53,39 @@ class Xml:
                         start.append(float(startpoint[i].attrib.get('x')))
                         start.append(float(startpoint[i].attrib.get('y')))
 
-        grid = []
-        # Snutt tatt fra koder.py
+
         for course in root.iter('Course'):
+            coursename = course[0].text
+            courseid = course[1].text
+            for variation in course.iter('CourseVariation'):
+                variation_id = variation[0].text
+                variation_name = variation[1].text
+                variation_length = variation[2].text
+                variation_start = variation[3].text
+                # Make course
+
+                for coursecontrol in variation.iter('CourseControl'):
+                    id = coursecontrol[0].text
+                    code = coursecontrol[1].text
+                    leg = coursecontrol[2].text
+
+
+
             row = []
+            self.courses.append(
+                Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
+                        crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+
             row.append(course[0].text)
             for coursecontrol in course.iter('CourseControl'):
                 row.append(coursecontrol[1].text)
             row.append('100')
             #    print(row)
-            print
-            " ".join(row)
+            print(" ".join(row))
             grid.append(row)
 
 
-class PurplePen:
+class fromPurplePen:
 
     def __init__(self, filename):
 
