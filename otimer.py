@@ -15,7 +15,7 @@ brikke = ec.Ecard()
 # Henter inn løyper fra kartet. Denne inneholder alle løyper
 
 #kart = mp.fromPurplePen('course.ppen')
-kart = mp.fromXml('course4.xml')
+kart = mp.fromXml('course.xml')
 
 
 def check_codes(brikke, kart):
@@ -25,14 +25,15 @@ def check_codes(brikke, kart):
     chk = []
     correct = False
     for course in kart.courses:
-        codes = course.code_list()
-        for code in codes:
-            if code in codes_ec[ind:]:
-                ind = ind + codes_ec[ind:].index(code)+1
-                chk.append(code)
+        for var in course.variations:
+            codes = var.codes
+            for code in codes:
+                if code in codes_ec[ind:]:
+                    ind = ind + codes_ec[ind:].index(code)+1
+                    chk.append(code)
 
-        if chk == codes:
-            correct = True
+            if chk == codes:
+                correct = True
 
     print(chk)
     print(codes_ec)

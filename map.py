@@ -11,6 +11,9 @@ import sys
 class fromXml:
 
     def __init__(self, filename):
+        self.controls = []
+        self.courses = []
+        self.variations = []
         self.read_xml(filename)
 
     # Denne er tatt fra worldfile.py
@@ -38,51 +41,73 @@ class fromXml:
             map.append(float(mapinfo[1].attrib.get('y')))
 
         #Her må jeg legge inn alle controller.
+        n = 0
         for control in root.iter('Control'):
-            code = control[0].text
-            x = control[2].attri('x')
-            y = control[2].attri('y')
 
-            self.controls.append(Control((0, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'xml')))
+            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'normal')))
+            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            n += 1
 
-        for startpoint in root.iter('StartPoint'):
-            for startpointcode in startpoint.iter('StartPointCode'):
-                #henter in posisojn til starten
-                if startpointcode.text=='STA1':
-                     for i in range(1, 3):
-                        start.append(float(startpoint[i].attrib.get('x')))
-                        start.append(float(startpoint[i].attrib.get('y')))
+        for control in root.iter('StartPoint'):
+            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'start')))
+            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            n += 1
 
-
+        for control in root.iter('FinishPoint'):
+            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'finish')))
+            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            n += 1
+        n = 0
         for course in root.iter('Course'):
-            coursename = course[0].text
-            courseid = course[1].text
+            self.courses.append(Course((course[1].text, course[0].text)))
+                       #, crs.attrib.get('kind'), crs.attrib.get('order'), \
+                        #crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+
+            #coursename = course[0].text
+            #courseid = course[1].text
+            j = 0
             for variation in course.iter('CourseVariation'):
-                variation_id = variation[0].text
-                variation_name = variation[1].text
-                variation_length = variation[2].text
-                variation_start = variation[3].text
-                # Make course
+                self.variations.append(Variation((course[1].text, variation[0].text)))
 
-                for coursecontrol in variation.iter('CourseControl'):
-                    id = coursecontrol[0].text
-                    code = coursecontrol[1].text
-                    leg = coursecontrol[2].text
+                for name in variation.iter('Name'):
+                    self.variations[j].set_name(name.text)
+
+                for name in variation.iter('StartPointCode'):
+                    self.variations[j].set_startpoint(name.text)
+
+                for control in variation.iter('CourseControl'):
+                    self.variations[j].set_code(control[1].text)
+                    #
+                    # id = coursecontrol[0].text
+                    # code = coursecontrol[1].text
+                    # leg = coursecontrol[2].text
+                self.variations[j].set_code('100')
+                j += 1
+            self.courses[n].set_variations(self.variations)
+            n += 1
+
+                # variation_id = variation[0].text
+                # variation_name = variation[1].text
+                # variation_length = variation[2].text
+                # variation_start = variation[3].text
+                # # Make course
 
 
 
-            row = []
-            self.courses.append(
-                Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
-                        crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
 
-            row.append(course[0].text)
-            for coursecontrol in course.iter('CourseControl'):
-                row.append(coursecontrol[1].text)
-            row.append('100')
-            #    print(row)
-            print(" ".join(row))
-            grid.append(row)
+
+            # row = []
+            # self.courses.append(
+            #     Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
+            #             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+            #
+            # row.append(course[0].text)
+            # for coursecontrol in course.iter('CourseControl'):
+            #     row.append(coursecontrol[1].text)
+            # row.append('100')
+            # #    print(row)
+            # print(" ".join(row))
+            # grid.append(row)
 
 
 class fromPurplePen:
@@ -156,37 +181,60 @@ class fromPurplePen:
             course.set_leg_length(self.controls)
 
 
-
-
-
 class Variation:
 
     def __init__(self, var):
+        self.course_id = var[0]
+        self.id = var[1]
+        self.name = None
+        self.startpoint = None
+        self.codes = []
 
-        self.type = var[0]
-        self.end = var[1]
-        #self.end = var[]
-        self.var = []
-        for vr in var[2][1:]:
-            self.var.append(vr)
+    def set_name(self, name):
+        self.name = name
+
+    def set_startpoint(self, name):
+        self.startpoint = name
+
+    def set_code(self,code):
+        self.codes.append(int(code))
 
 
 
-
+        #
+        #
+        # self.type = var[0]
+        # self.end = var[1]
+        # #self.end = var[]
+        # self.var = []
+        # for vr in var[2][1:]:
+        #     self.var.append(vr)
 
 
 class Course:
 
     def __init__(self, crs):
-        self.id = crs[0] #.zfill(2)
+        self.id = crs[0]
         self.name = crs[1]
-        self.kind = crs[2]
-        self.first_ctrl = crs[5]
         self.codes = []
         self.order = []
         self.x = []
         self.y = []
+        self.var_id = 0
+        self.kind = None
+        self.first_ctrl = 0
+        self.variations = []
+        self.numvar = 0
 
+    def set_kind(self, kind):
+        self.kind = kind
+
+    def set_first_ctrl(self, code):
+        self.first_ctrl = code
+
+    def set_variations(self, var):
+        self.variations = var
+        self.numvar = len(var)
 
     def set_order(self, order):
         next_ctrl = self.first_ctrl
@@ -226,7 +274,7 @@ class Course:
         self.codes[-1] = 100
         self.codes = [int(x) for x in self.codes]
 
-    def set_leg_length(self,controls):
+    def set_leg_length(self, controls):
         self.dl = []
         scale = 10
         for i in range(0, len(self.x)-1):
@@ -239,6 +287,7 @@ class Course:
         return self.dl
 
     def code_list(self):
+
         return self.codes
 
         print('hello')
@@ -252,7 +301,13 @@ class Control:
         self.x = ctrl[2]
         self.y = ctrl[3]
         self.kind = ctrl[4]
+        self.x_utm = 0
+        self.y_utm = 0
         #self.variation =
+
+    def set_utm(self, x, y):
+        self.x_utm = x
+        self.y_utm = y
 
 
 def code_list(order,controls):
