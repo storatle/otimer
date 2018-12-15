@@ -31,8 +31,7 @@ class fromXml:
         scale = (float(root[2][0].text))/1000 # koordinater i Purple pen er mm???
 
         map=[] #Kartinfo [Målestokk, Venstre, Topp]
-        ctrl=[] #Kontrolpost [UTM Vest, UTM Nord, Venstre, Topp]
-        start=[] #Starpost [UTM Vest, UTM Nord, Venstre, Topp]
+
 
          #Henter inn skala og koordinater for øvre venstre hjørne
         for mapinfo in root.iter('Map'):
@@ -41,74 +40,37 @@ class fromXml:
             map.append(float(mapinfo[1].attrib.get('y')))
 
         #Her må jeg legge inn alle controller.
-        n = 0
-        for control in root.iter('Control'):
 
+        for control in root.iter('Control'):
             self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'normal')))
-            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
-            n += 1
+            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
 
         for control in root.iter('StartPoint'):
             self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'start')))
-            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
-            n += 1
+            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
 
         for control in root.iter('FinishPoint'):
             self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'finish')))
-            self.controls[n].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
-            n += 1
-        n = 0
+            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+
         for course in root.iter('Course'):
             self.courses.append(Course((course[1].text, course[0].text)))
-                       #, crs.attrib.get('kind'), crs.attrib.get('order'), \
-                        #crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
 
-            #coursename = course[0].text
-            #courseid = course[1].text
-            j = 0
             for variation in course.iter('CourseVariation'):
                 self.variations.append(Variation((course[1].text, variation[0].text)))
 
                 for name in variation.iter('Name'):
-                    self.variations[j].set_name(name.text)
+                    self.variations[-1].set_name(name.text)
 
                 for name in variation.iter('StartPointCode'):
-                    self.variations[j].set_startpoint(name.text)
+                    self.variations[-1].set_startpoint(name.text)
 
                 for control in variation.iter('CourseControl'):
-                    self.variations[j].set_code(control[1].text)
-                    #
-                    # id = coursecontrol[0].text
-                    # code = coursecontrol[1].text
-                    # leg = coursecontrol[2].text
-                self.variations[j].set_code('100')
-                j += 1
-            self.courses[n].set_variations(self.variations)
-            n += 1
+                    self.variations[-1].set_code(control[1].text)
 
-                # variation_id = variation[0].text
-                # variation_name = variation[1].text
-                # variation_length = variation[2].text
-                # variation_start = variation[3].text
-                # # Make course
+                self.variations[-1].set_code('100')
 
-
-
-
-
-            # row = []
-            # self.courses.append(
-            #     Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
-            #             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
-            #
-            # row.append(course[0].text)
-            # for coursecontrol in course.iter('CourseControl'):
-            #     row.append(coursecontrol[1].text)
-            # row.append('100')
-            # #    print(row)
-            # print(" ".join(row))
-            # grid.append(row)
-
+            self.courses[-1].set_variations(self.variations)
 
 class fromPurplePen:
 
