@@ -77,42 +77,20 @@ class fromXml:
 
                 for control in variation.iter('CourseControl'):
                     self.variations[j].set_code(control[1].text)
-                    #
-                    # id = coursecontrol[0].text
-                    # code = coursecontrol[1].text
-                    # leg = coursecontrol[2].text
+
                 self.variations[j].set_code('100')
                 j += 1
             self.courses[n].set_variations(self.variations)
             n += 1
 
-                # variation_id = variation[0].text
-                # variation_name = variation[1].text
-                # variation_length = variation[2].text
-                # variation_start = variation[3].text
-                # # Make course
-
-
-
-
-
-            # row = []
-            # self.courses.append(
-            #     Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
-            #             crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
-            #
-            # row.append(course[0].text)
-            # for coursecontrol in course.iter('CourseControl'):
-            #     row.append(coursecontrol[1].text)
-            # row.append('100')
-            # #    print(row)
-            # print(" ".join(row))
-            # grid.append(row)
-
 
 class fromPurplePen:
 
     def __init__(self, filename):
+
+        self.controls = []
+        self.courses = []
+        self.variations = []
 
         self.read_ppen(filename)
         self.set_courses()
@@ -129,14 +107,6 @@ class fromPurplePen:
         root = tree.getroot()
 
         #Henter data fra Purple Pen fila
-        #ctrl = []
-        self.controls = []
-        #crs = []
-        #chain = []
-        self.courses = []
-        self.order = []
-        self.variations = []
-
         for event in root.iter('event'):
             for map in event.iter('map'):
                 self.scale = map.attrib.get('scale')
@@ -150,13 +120,14 @@ class fromPurplePen:
                 y = loc.attrib.get('y')
             self.controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
 
-            #controls = sorted(controls, key=lambda x: x.id)
         # Leser inn løypene
         for crs in root.iter('course'): # Mulig at jeg bør legge inn dette i en loop
 
-            self.courses.append(Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
-                            crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+            self.courses.append(Course((crs.attrib.get('id'), crs[0].text)))
+            self.courses[-1].set_first_ctrl(crs[2].attrib.get('course-control'))
 
+            #, crs.attrib.get('kind'), crs.attrib.get('order'), crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+        order = []
         for cc in root.iter('course-control'):
             #variation = []
             vr = []
@@ -171,12 +142,14 @@ class fromPurplePen:
                 vr = tuple(vr)
                 self.variations.append(Variation((cc.attrib.get('variation'), cc.attrib.get('variation-end'), vr)))
 
-            self.order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
+            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
+
+        self.courses[-1].set_order(order)
 
     def set_courses(self):
 
         for course in self.courses:
-            course.set_order(self.order)
+            #course.set_order(self.order)
             course.set_codes(self.controls)
             course.set_leg_length(self.controls)
 
@@ -198,6 +171,8 @@ class Variation:
 
     def set_code(self,code):
         self.codes.append(int(code))
+
+
 
 
 
@@ -226,6 +201,7 @@ class Course:
         self.variations = []
         self.numvar = 0
 
+
     def set_kind(self, kind):
         self.kind = kind
 
@@ -236,6 +212,8 @@ class Course:
         self.variations = var
         self.numvar = len(var)
 
+    # Setter rekkefølgen fra purple pen fila. Her må jeg sjekke om det er variasjoner
+    # Flytt denne til variasjoner
     def set_order(self, order):
         next_ctrl = self.first_ctrl
         loop = False
