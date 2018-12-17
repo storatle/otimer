@@ -194,6 +194,7 @@ class Course:
         self.first_ctrl = code
 
     def set_variations(self, var):
+        # Dette er variasjoner hentet direkte fra formXML
         self.variations = var
         self.numvar = len(var)
 
@@ -212,7 +213,7 @@ class Course:
             for control in order:
                 if control[0] == next_ctrl:
                     if control[3] == 'loop'and not loop:# Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
-
+                        # Jeg må vite hvor mange variations det er
                         if i == 1:
                             course_id = 0
                             variation_id = 0
