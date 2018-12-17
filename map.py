@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import argparse
 import sys
+import string
+
 #from wand.image import Image
 
 
@@ -168,6 +170,9 @@ class Variation:
     def set_order(self, order):
         self.order = order
 
+    def set_startloop(self, loop):
+        self.startloop = loop
+
 
 
 
@@ -194,17 +199,36 @@ class Course:
         self.first_ctrl = code
 
     def set_variations(self, var):
-        # Dette er variasjoner hentet direkte fra formXML
+        # Dette er variasjoner hentet direkte fra fromXML
         self.variations = var
         self.numvar = len(var)
 
     def set_loops(self, var):
         self.loops.append(var)
 
+    def find_variations(self):
+        numvar = int(len(self.loops) / 3)
+
+        for loops in self.loops[:numvar]:
+
+            for n in range(0, len(loops[1:])):
+                self.variations.append(Variation((self.id, n)))
+                self.variations[-1].set_name(string.ascii_uppercase[n])
+                self.variations[-1].set_startpoint(loops[0])
+                self.variations[-1].set_startloop(loops[n+1])
+
+
+
+
+
+
+
+
     # Setter rekkefølgen fra purple pen fila. Her må jeg sjekke om det er variasjoner
     # Flytt denne til variasjoner
 
     def set_order(self, order):
+        self.find_variations()
         next_ctrl = self.first_ctrl
         loop = False
         n = 1
@@ -213,15 +237,18 @@ class Course:
             for control in order:
                 if control[0] == next_ctrl:
                     if control[3] == 'loop'and not loop:# Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
-                        # Jeg må vite hvor mange variations det er
+                        # Jeg må vite hvor mange variations det må være en loop her
+                        ord = self.order[:]
+                        for var in self.variations:
+                            next_ctrl = var.startloop
+
                         if i == 1:
                             course_id = 0
-                            variation_id = 0
-                            self.variations.append(Variation((course_id, variation_id)))
-                            self.variations[-1].set_name('A')
-                            self.variations[-1].set_order(self.order[:])
+                            #variation_id = 0
 
-                            next_ctrl = self.loops[0][i]
+                         #   self.variations[0].set_order(self.order[:])
+
+                         #   next_ctrl = self.variations[0].startloop
                         elif i >= len(self.loops[0]):
                             loop = False
                             next_ctrl = control[1]
