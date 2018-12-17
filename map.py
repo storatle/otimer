@@ -42,15 +42,15 @@ class fromXml:
         #Her må jeg legge inn alle controller.
 
         for control in root.iter('Control'):
-            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'normal')))
+            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'normal')))
             self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
 
         for control in root.iter('StartPoint'):
-            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'start')))
+            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'start')))
             self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
 
         for control in root.iter('FinishPoint'):
-            self.controls.append(Control((n, control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'finish')))
+            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'finish')))
             self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
 
         for course in root.iter('Course'):
@@ -277,13 +277,14 @@ class Course:
 class Control:
 
     def __init__(self, ctrl):
-        self.id = ctrl[0]  #.zfill(2)
-        self.code = ctrl[1]
-        self.x = ctrl[2]
-        self.y = ctrl[3]
-        self.kind = ctrl[4]
+
+        self.code = ctrl[0]
+        self.x = ctrl[1]
+        self.y = ctrl[2]
+        self.kind = ctrl[3]
         self.x_utm = 0
         self.y_utm = 0
+        self.id = 0  # .zfill(2)
         #self.variation =
 
     def set_utm(self, x, y):
@@ -322,6 +323,10 @@ def code_list(order,controls):
         #         ppen.append(float(printarea.attrib.get('page-margins')))
         #         ppen.append(float(printarea.attrib.get('page-width')))
         #         ppen.append(float(printarea.attrib.get('page-height')))
+
+
+
+
 
 # def main():
 #

@@ -14,8 +14,8 @@ brikke = ec.Ecard()
 
 # Henter inn løyper fra kartet. Denne inneholder alle løyper
 
-kart = mp.fromPurplePen('course3.ppen')
-#kart = mp.fromXml('course.xml')
+#kart = mp.fromPurplePen('course.ppen')
+kart = mp.fromXml('course.xml')
 
 
 def check_codes(brikke, kart):
