@@ -72,9 +72,17 @@ class fromXml:
 
             self.courses[-1].set_variations(self.variations)
 
+
+
+
+
 class fromPurplePen:
 
     def __init__(self, filename):
+
+        self.controls = []
+        self.courses = []
+        self.variations = []
 
         self.read_ppen(filename)
         self.set_courses()
@@ -91,14 +99,6 @@ class fromPurplePen:
         root = tree.getroot()
 
         #Henter data fra Purple Pen fila
-        #ctrl = []
-        self.controls = []
-        #crs = []
-        #chain = []
-        self.courses = []
-        self.order = []
-        self.variations = []
-
         for event in root.iter('event'):
             for map in event.iter('map'):
                 self.scale = map.attrib.get('scale')
@@ -112,13 +112,14 @@ class fromPurplePen:
                 y = loc.attrib.get('y')
             self.controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
 
-            #controls = sorted(controls, key=lambda x: x.id)
         # Leser inn løypene
         for crs in root.iter('course'): # Mulig at jeg bør legge inn dette i en loop
 
-            self.courses.append(Course((crs.attrib.get('id'), crs[0].text, crs.attrib.get('kind'), crs.attrib.get('order'), \
-                            crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+            self.courses.append(Course((crs.attrib.get('id'), crs[0].text)))
+            self.courses[-1].set_first_ctrl(crs[2].attrib.get('course-control'))
 
+            #, crs.attrib.get('kind'), crs.attrib.get('order'), crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+        order = []
         for cc in root.iter('course-control'):
             #variation = []
             vr = []
@@ -131,14 +132,16 @@ class fromPurplePen:
 
             if vr:
                 vr = tuple(vr)
-                self.variations.append(Variation((cc.attrib.get('variation'), cc.attrib.get('variation-end'), vr)))
+                self.courses[-1].set_loops(vr)
 
-            self.order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
+            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
+
+        self.courses[-1].set_order(order)
 
     def set_courses(self):
 
         for course in self.courses:
-            course.set_order(self.order)
+            #course.set_order(self.order)
             course.set_codes(self.controls)
             course.set_leg_length(self.controls)
 
@@ -147,10 +150,11 @@ class Variation:
 
     def __init__(self, var):
         self.course_id = var[0]
-        self.id = var[1]
+        self.id = var[1] # Variatin id
         self.name = None
         self.startpoint = None
         self.codes = []
+        self.order = []
 
     def set_name(self, name):
         self.name = name
@@ -161,16 +165,10 @@ class Variation:
     def set_code(self,code):
         self.codes.append(int(code))
 
+    def set_order(self, order):
+        self.order = order
 
 
-        #
-        #
-        # self.type = var[0]
-        # self.end = var[1]
-        # #self.end = var[]
-        # self.var = []
-        # for vr in var[2][1:]:
-        #     self.var.append(vr)
 
 
 class Course:
@@ -187,6 +185,7 @@ class Course:
         self.first_ctrl = 0
         self.variations = []
         self.numvar = 0
+        self.loops = []
 
     def set_kind(self, kind):
         self.kind = kind
@@ -198,29 +197,49 @@ class Course:
         self.variations = var
         self.numvar = len(var)
 
+    def set_loops(self, var):
+        self.loops.append(var)
+
+    # Setter rekkefølgen fra purple pen fila. Her må jeg sjekke om det er variasjoner
+    # Flytt denne til variasjoner
+
     def set_order(self, order):
         next_ctrl = self.first_ctrl
         loop = False
         n = 1
+        i = 1
         while next_ctrl:
             for control in order:
                 if control[0] == next_ctrl:
-                    if control[3] == 'loop'and not loop:  # Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
-                        # Sett inn variation
+                    if control[3] == 'loop'and not loop:# Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
 
-                        if n < len(control[3][2]): # Denne er feil. *Må sjekke variations med riktig loop og riktig endpost
-                            next_ctrl = control[3][2][n] # Her henter jeg første variasjon, men jeg må også hente 2 og 3 versjon slik at jeg får alle sløyfene
-                            n += 1
+                        if i == 1:
+                            course_id = 0
+                            variation_id = 0
+                            self.variations.append(Variation((course_id, variation_id)))
+                            self.variations[-1].set_name('A')
+                            self.variations[-1].set_order(self.order[:])
 
+                            next_ctrl = self.loops[0][i]
+                        elif i >= len(self.loops[0]):
+                            loop = False
+                            next_ctrl = control[1]
+                            self.order.append(control[2])
+                            i = 1
+                            break
                         else:
-                            n = 1
+                            next_ctrl = self.loops[0][i]
+                        # control = list(control)
+                        # control[0] = self.loops[0][i]
+                        i += 1
                         loop = True
-                        break
                     else:
                         self.order.append(control[2])
                         next_ctrl = control[1]
                         loop = False
                         break
+
+        self.variations[-1] # Her må jeg lage ny variasjon 'Bæ' How the hell?
 
     def set_codes(self, controls):
 
