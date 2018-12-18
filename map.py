@@ -6,6 +6,7 @@ import numpy as np
 import argparse
 import sys
 import string
+from itertools import permutations
 
 #from wand.image import Image
 
@@ -134,7 +135,7 @@ class fromPurplePen:
 
             if vr:
                 vr = tuple(vr)
-                self.courses[-1].set_loops(vr)
+                self.courses[-1].set_loop_index(vr)
 
             order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
 
@@ -157,6 +158,9 @@ class Variation:
         self.startpoint = None
         self.codes = []
         self.order = []
+        self.numloops = 0
+        self.startloop = []
+        self.loops = []
 
     def set_name(self, name):
         self.name = name
@@ -172,6 +176,37 @@ class Variation:
 
     def set_startloop(self, loop):
         self.startloop = loop
+
+    def set_numloops(self, loops):
+        self.numloops = loops
+
+    def set_loop(self, loop):
+        self.loops.append(loop)
+
+
+class Loop:
+
+    def __init__(self, var):
+        self.name = None
+        self.id = var[1]
+        self.course_id = var[0]
+        self.startcode = 0
+        self.startloop = 0
+        self.numloops = 0
+
+    def set_name(self, name):
+            self.name = name
+
+    def set_startpoint(self, point):
+            self.startpoint = point
+
+    def set_startloop(self, loop):
+            self.startloop = loop
+
+    def set_numloops(self, loops):
+        self.numloops = loops
+
+
 
 
 
@@ -191,6 +226,8 @@ class Course:
         self.variations = []
         self.numvar = 0
         self.loops = []
+        self.loop_index = []
+        self.numloops = 0
 
     def set_kind(self, kind):
         self.kind = kind
@@ -203,19 +240,38 @@ class Course:
         self.variations = var
         self.numvar = len(var)
 
-    def set_loops(self, var):
-        self.loops.append(var)
+    def set_loop_index(self, var):
 
+        self.loop_index.append(var)
+
+    def set_loops(self):
+        numvar = int(len(self.loop_index) / 3)
+        for loop in self.loop_index[:numvar]:
+            for n in range(0, len(loop[1:])):
+                self.loops.append(Loop((self.id, n)))
+                self.loops[-1].set_name(string.ascii_uppercase[n])
+                self.loops[-1].set_startpoint(loop[0])
+                self.loops[-1].set_startloop(loop[n + 1])
+                self.loops[-1].set_numloops(len(loop[1:]))
+
+
+
+    # Variasjoner
     def find_variations(self):
-        numvar = int(len(self.loops) / 3)
+        num_loops = int(len(self.loops))
+        perms = [''.join(p) for p in permutations(string.ascii_uppercase[:num_loops])]
+        for var in perms:
+            self.variations.append(Variation((self.id, var)))
 
-        for loops in self.loops[:numvar]:
+            for name in var:
+                for loop in self.loops:
+                    if loop.name == name:
+                        self.variations[-1].set_loop(loop)
 
-            for n in range(0, len(loops[1:])):
-                self.variations.append(Variation((self.id, n)))
-                self.variations[-1].set_name(string.ascii_uppercase[n])
-                self.variations[-1].set_startpoint(loops[0])
-                self.variations[-1].set_startloop(loops[n+1])
+
+                #self.variations[-1].set_startloop(loops[n+1])
+                #self.variations[-1].set_numloops(len(loops[1:]))
+
 
 
 
@@ -228,35 +284,32 @@ class Course:
     # Flytt denne til variasjoner
 
     def set_order(self, order):
+        self.set_loops()
         self.find_variations()
         next_ctrl = self.first_ctrl
         loop = False
-        n = 1
-        i = 1
+        n = 0
+        i = 0
         while next_ctrl:
             for control in order:
                 if control[0] == next_ctrl:
                     if control[3] == 'loop'and not loop:# Nå er vi igang med en loop hvordan skal jeg klare å få den til å sjekke begge runder
                         # Jeg må vite hvor mange variations det må være en loop her
                         ord = self.order[:]
-                        for var in self.variations:
-                            next_ctrl = var.startloop
 
-                        if i == 1:
-                            course_id = 0
-                            #variation_id = 0
+                        if i < self.variations[n].numloops:
+                            next_ctrl = self.variations[i].startloop
+                            loop = True
 
-                         #   self.variations[0].set_order(self.order[:])
-
-                         #   next_ctrl = self.variations[0].startloop
-                        elif i >= len(self.loops[0]):
+                        if i >= self.variations[n].numloops:
+                            # Her må du sette ny loop
                             loop = False
                             next_ctrl = control[1]
                             self.order.append(control[2])
                             i = 1
                             break
-                        else:
-                            next_ctrl = self.loops[0][i]
+                        #else:
+                            #next_ctrl = self.loops[0][i]
                         # control = list(control)
                         # control[0] = self.loops[0][i]
                         i += 1
