@@ -194,6 +194,8 @@ class Loop:
         self.startcode = 0
         self.startloop = 0
         self.numloops = 0
+        self.star = None
+        self.codes = []
 
     def set_name(self, name):
             self.name = name
@@ -207,6 +209,9 @@ class Loop:
     def set_numloops(self, loops):
         self.numloops = loops
 
+    def set_star(self, star):
+        self.star = star
+
     def set_codes(self, controls):
         for code in self.order:
             for ctrl in controls:
@@ -219,7 +224,6 @@ class Loop:
         del self.codes[0]
         self.codes[-1] = 100
         self.codes = [int(x) for x in self.codes]
-
 
 
 class Course:
@@ -239,6 +243,7 @@ class Course:
         self.loops = []
         self.loop_index = []
         self.numloops = 0
+        self.num_stars = 0
 
     def set_kind(self, kind):
         self.kind = kind
@@ -256,22 +261,42 @@ class Course:
         self.loop_index.append(var)
 
     def set_loops(self):
-        numvar = int(len(self.loop_index) / 3)
+        self.num_stars = int(len(self.loop_index) / 3) # Finner antall stjerner
         n = 0
-        for loop in self.loop_index[:numvar]:
+        s = 0 # Star
+        for loop in self.loop_index[:self.num_stars]:
+
             for code in loop[1:]:
                 self.loops.append(Loop((self.id, n)))
                 self.loops[-1].set_name(string.ascii_uppercase[n])
                 self.loops[-1].set_startpoint(loop[0])
                 self.loops[-1].set_startloop(code)
                 self.loops[-1].set_numloops(len(loop[1:]))
+                self.loops[-1].set_star(s)
                 n += 1
+            s += 1
+
     # Variasjoner
     def find_variations(self):
         num_loops = int(len(self.loops))
-        #perms = [''.join(p) for p in permutations(string.ascii_uppercase[:num_loops])]
-        perms = [''.join(p) for p in combinations(string.ascii_uppercase[:num_loops])]
+        perms = [''.join(p) for p in permutations(string.ascii_uppercase[:num_loops])]
+        #perms = [''.join(p) for p in combinations(string.ascii_uppercase[:num_loops])]
         # HEr må det sjekkes litt
+        star_name = ""
+        var_name = []
+        # sjekk antall stjerner, hver luuop har variabelen
+        for star in range(0, self.num_stars):
+            for loop in self.loops:
+                if loop.star == star:
+                    star_name = star_name + loop.name
+
+            indices = [i for i, s in enumerate(perms) if star_name in s]
+            for ind in indices:
+                var_name.append(perms[ind])
+            perms = var_name
+            var_name = []
+
+
 
         for var in perms:
             self.variations.append(Variation((self.id, var)))
