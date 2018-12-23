@@ -183,8 +183,6 @@ class Variation:
         self.loops.append(loop)
 
 
-
-
 class Loop:
 
     def __init__(self, var):
@@ -280,25 +278,27 @@ class Course:
     def find_variations(self):
         num_loops = int(len(self.loops))
         perms = [''.join(p) for p in permutations(string.ascii_uppercase[:num_loops])]
-        #perms = [''.join(p) for p in combinations(string.ascii_uppercase[:num_loops])]
         # HEr må det sjekkes litt
         star_name = ""
         var_name = []
-        # sjekk antall stjerner, hver luuop har variabelen
+        j=0
+        # sjekk antall stjerner, hver loop har variabelen
         for star in range(0, self.num_stars):
             for loop in self.loops:
                 if loop.star == star:
                     star_name = star_name + loop.name
 
-            indices = [i for i, s in enumerate(perms) if star_name in s]
-            for ind in indices:
-                var_name.append(perms[ind])
-            perms = var_name
-            var_name = []
+            mini_perms = [''.join(p) for p in permutations(star_name)]
+            #NB sjekk om dette stemmer med enda flere stjerner.
+            for com in mini_perms:
+                indices = [i for i, s in enumerate(perms) if com in s[j:len(star_name)+j]]
+                for ind in indices:
+                    var_name.append(perms[ind])
+            j = j + len(star_name)
+            star_name = ""
+        var_name = set(var_name)
 
-
-
-        for var in perms:
+        for var in var_name:
             self.variations.append(Variation((self.id, var)))
 
             for name in var:
@@ -314,7 +314,6 @@ class Course:
         for variation in self.variations:
             next_ctrl = self.first_ctrl
             loop = False
-
             n = 0
             i = 0
             while next_ctrl:
