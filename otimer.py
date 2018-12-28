@@ -14,7 +14,7 @@ brikke = ec.Ecard()
 
 # Henter inn løyper fra kartet. Denne inneholder alle løyper
 
-kart = mp.fromPurplePen('course4.ppen')
+kart = mp.fromPurplePen('Treningsløp_uke01.ppen')
 #kart = mp.fromXml('course.xml')
 
 
