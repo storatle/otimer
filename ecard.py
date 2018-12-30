@@ -58,8 +58,8 @@ br215066 = bytearray(b'\xff\xff\xff\xff\xe6M\x10<\x12\x0c\x0b\x0f&\x05\x00\x00\x
 class Ecard:
 
 
-    def __init__(self):
-        array = br215066
+    def __init__(self, array):
+        #array = br215066
         self.dump = []
         self.e_num = 0
 
@@ -204,8 +204,8 @@ class Ecard:
 
 
 
-def main():
-    brikke = Ecard()
+# def main():
+#     brikke = Ecard()
 
 
 def set_time(td):
@@ -244,7 +244,7 @@ def insert_null(byte):
     # int((c+b[2:]+a[2:]),16)
 
 
-main()
+#main()
 
 # if  (args.start):
 #     cont =1
