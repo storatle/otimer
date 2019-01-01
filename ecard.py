@@ -87,7 +87,7 @@ class Ecard:
             # print(byte)
             #print(hex(byte))
 
-        self.dump
+
 
     def read_port(self):
 

@@ -45,6 +45,8 @@ class Runner:
         self.name = ''
         self.find_name(self.brikke.e_num)
         self.sluttid = ec.set_time(self.brikke.times[-1])
+        self.løype = ''
+
 
 
     def check_codes(self):
@@ -63,6 +65,7 @@ class Runner:
 
                 if self.chk == codes:
                     correct = True
+                    self.løype = course.name + ' ' + var.name
 
         # print(chk)
         # print(codes_ec)
@@ -86,7 +89,8 @@ class Runner:
         num_ctrl = 0
         print('Brikkenummer ' + str(self.brikke.e_num))
         print('Navn: ' + self.name)
-        print('Sluttid ' + ec.set_time(self.brikke.times[-1]))
+        print('Sluttid ' + self.sluttid)
+        print('Løype ' + self.løype)
         i = 1
         output = list(zip(self.brikke.codes, self.brikke.legs, self.brikke.times))
         for item in output[:-2]:
@@ -121,6 +125,10 @@ def read_from_database():
 
     return names
 
+#def make_result_list():
+    # sjekk ospeaker.
+
+
 def main():
     runners = []
     # serialport = serial.Serial("/dev/ttyAMA0", 9600, timeout=0.5)
@@ -135,7 +143,7 @@ def main():
         print(str(command))
 
         kartfil = 'course.xml'
-        # filnavn = 'Treningsløp_uke01.xml'
+        kartfil = 'trening.xml'
 
         runners.append(Runner(kartfil, command))
 
