@@ -19,8 +19,10 @@ br215066 = bytearray(b'\xff\xff\xff\xff\xe6M\x10<\x12\x0c\x0b\x0f&\x05\x00\x00\x
 
 # Henter inn løyper fra kartet. Denne inneholder alle løyper
 
-# kart = mp.fromPurplePen('course.ppen')
-# kart = mp.fromXml('course.xml')
+
+#kart = mp.fromPurplePen('course.ppen')
+kart = mp.fromXml('trening.xml')
+
 
 
 def print_all_codes(kart):
