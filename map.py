@@ -146,7 +146,6 @@ class fromPurplePen:
             course.set_codes(self.controls)
             course.set_leg_length(self.controls)
 
-
 class Variation:
 
     def __init__(self, var):
@@ -168,8 +167,6 @@ class Variation:
 
     def set_order(self, order):
         self.order = order
-
-
 
 
 class Course:

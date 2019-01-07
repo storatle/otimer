@@ -58,36 +58,36 @@ br215066 = bytearray(b'\xff\xff\xff\xff\xe6M\x10<\x12\x0c\x0b\x0f&\x05\x00\x00\x
 class Ecard:
 
 
-    def __init__(self):
-
+    def __init__(self, array):
+        #array = br215066
         self.dump = []
         self.e_num = 0
 
         self.codes = []
         self.times = []
         self.legs = []
-        self.read_ecard()
+        self.read_ecard(array)
         self.get_ecard_number()
         #self.get_codes()
         self.get_codes_and_times()
 
         #self.print()
 
-    def read_ecard(self):
+    def read_ecard(self, array):
         # Denne her må sette opp slik at jeg leser direkte fra serieport
         # Bruk read line
 
         # brikkenr = br211419
-        brikkenr = br215066
+        #brikkenr = br215066
         # brikkenr = br222072
 
         # brikkenr = br211421
-        for byte in brikkenr:
+        for byte in array:
             self.dump.append(byte)
             # print(byte)
             #print(hex(byte))
 
-        self.dump
+
 
     def read_port(self):
 
@@ -185,18 +185,18 @@ class Ecard:
             i += 1
             j = j + 3
 
-    def print(self):
-        num_ctrl = 0
-        print('Brikkenummer ' + str(self.e_num))
-        print('Sluttid ' + set_time(self.times[-1]))
-        i = 1
-        output = list(zip(self.codes, self.legs, self.times))
-        for item in output[:-2]:
-            print('Post ' + str(i).zfill(2) + ':  ' + set_time(item[2]) + '  ' + set_time(item[1]) + '  ' + str(item[0]))
-            i += 1
-
-        item = output[-2]
-        print('Post ' + 'F ' + ':  ' + set_time(item[2]) + '  ' + set_time(item[1]) + '  ' + str(item[0]))
+    # def print(self):
+    #     num_ctrl = 0
+    #     print('Brikkenummer ' + str(self.e_num))
+    #     print('Sluttid ' + set_time(self.times[-1]))
+    #     i = 1
+    #     output = list(zip(self.codes, self.legs, self.times))
+    #     for item in output[:-2]:
+    #         print('Post ' + str(i).zfill(2) + ':  ' + set_time(item[2]) + '  ' + set_time(item[1]) + '  ' + str(item[0]))
+    #         i += 1
+    #
+    #     item = output[-2]
+    #     print('Post ' + 'F ' + ':  ' + set_time(item[2]) + '  ' + set_time(item[1]) + '  ' + str(item[0]))
 
     def codes(self):
         return self.codes()
@@ -204,8 +204,8 @@ class Ecard:
 
 
 
-def main():
-    brikke = Ecard()
+# def main():
+#     brikke = Ecard()
 
 
 def set_time(td):
@@ -244,7 +244,7 @@ def insert_null(byte):
     # int((c+b[2:]+a[2:]),16)
 
 
-main()
+#main()
 
 # if  (args.start):
 #     cont =1
