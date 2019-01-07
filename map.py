@@ -55,9 +55,10 @@ class fromXml:
 
         for course in root.iter('Course'):
             self.courses.append(Course((course[1].text, course[0].text)))
-
+            self.variations = []
             for variation in course.iter('CourseVariation'):
                 self.variations.append(Variation((course[1].text, variation[0].text)))
+                print(variation[1].text)
 
                 for name in variation.iter('Name'):
                     self.variations[-1].set_name(name.text)
