@@ -134,9 +134,33 @@ def read_from_database():
 def main():
     runners = []
     # serialport = serial.Serial("/dev/ttyAMA0", 9600, timeout=0.5)
-    read = True
+    read = False
 
     #read_database()
+
+    ser = serial.Serial()
+    ser.baudrate = 9600
+    ser.bytesize = serial.EIGHTBITS
+    ser.parity = serial.PARITY_NONE
+    ser.stopbits = serial.STOPBITS_ONE
+    # ser.xonxoff=1
+    # ser.rtscts=1
+    ser.timeout = 0.5
+    ser.port = "/dev/ttyUSB0"
+
+    ser.open()
+    count = 0
+    stack = []
+    f = open("brikkenummer.txt", "w+")
+    #command = ser.readline()
+
+    while 1:
+        command = ser.readline()
+        print(command)
+        if command:
+            f.write(str((command)) + '\n')
+
+
 
     while read:
         # command = serialport.read()
