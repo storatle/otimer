@@ -146,43 +146,47 @@ def main():
     # ser.xonxoff=1
     # ser.rtscts=1
     ser.timeout = 0.5
-    ser.port = "/dev/ttyUSB0"
+    ser.port = "/dev/ttyUSB1"
 
     ser.open()
     count = 0
     stack = []
     f = open("brikkenummer.txt", "w+")
-    #command = ser.readline()
-
+    command = bytearray()
+    n = 0
     while 1:
-        command = ser.readline()
-        print(command)
-        if command:
+        while ser.read():
+            command += ser.readline()
+            print(command)
+            n += 1
+            print(n)
             f.write(str((command)) + '\n')
 
 
 
-    while read:
+
         # command = serialport.read()
+        if command:
+            #command = br215066
+            print(str(command))
 
-        command = br215066
-        print(str(command))
+            kartfil = 'course.xml'
+            kartfil = 'trening.xml'
 
-        kartfil = 'course.xml'
-        kartfil = 'trening.xml'
+            runners.append(Runner(kartfil, command))
 
-        runners.append(Runner(kartfil, command))
+            print_all_codes(runners[-1].kart)
 
-        print_all_codes(runners[-1].kart)
+            if runners[-1].check_codes():
+                print('ok')
+                runners[-1].print()
 
-        if runners[-1].check_codes():
-            print('ok')
-            runners[-1].print()
+            else:
+                print('Løper mangler poster')
 
-        else:
-            print('Løper mangler poster')
+            read = False
+            command = bytearray()
 
-        read = False
 
 
 main()
