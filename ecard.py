@@ -87,10 +87,8 @@ class Ecard:
             # print(byte)
             #print(hex(byte))
 
-
-
     def read_port(self):
-
+        # Denne må undersøker i branch serial
         ser = serial.Serial()
         ser.baudrate = 9600
         ser.bytesize = serial.EIGHTBITS
