@@ -15,13 +15,7 @@ br215066 = bytearray(b'\xff\xff\xff\xff\xe6M\x10<\x12\x0c\x0b\x0f&\x05\x00\x00\x
 # Lag ny brikke
 
 # brikke = ec.Ecard()
-
-
 # Henter inn løyper fra kartet. Denne inneholder alle løyper
-
-
-#kart = mp.fromPurplePen('course.ppen')
-kart = mp.fromXml('trening.xml')
 
 
 
@@ -40,24 +34,22 @@ def print_all_codes(kart):
 
 class Runner:
 
-    def __init__(self, filname, bytearray):
+    def __init__(self, courses, bytearray):
         # filnavn = 'Treningsløp_uke01.xml'
         self.brikke = ec.Ecard(bytearray)
-        self.kart = mp.fromXml(filname)
+        self.map = courses
         self.name = ''
         self.find_name(self.brikke.e_num)
         self.sluttid = ec.set_time(self.brikke.times[-1])
-        self.løype = ''
-
-
+        self.course = ''
+        self.chk = []
 
     def check_codes(self):
 
         codes_ec = self.brikke.codes
         ind = 0
-        self.chk = []
         correct = False
-        for course in self.kart.courses:
+        for course in self.map.courses:
             for var in course.variations:
                 codes = var.codes
                 for code in codes:
@@ -67,11 +59,7 @@ class Runner:
 
                 if self.chk == codes:
                     correct = True
-                    self.løype = course.name + ' ' + var.name
-
-        # print(chk)
-        # print(codes_ec)
-        # print(codes)
+                    self.course = course.name + ' ' + var.name
 
         return correct
 
@@ -86,13 +74,12 @@ class Runner:
                 self.name = name[2]
                 break
 
-
     def print(self):
-        num_ctrl = 0
+
         print('Brikkenummer ' + str(self.brikke.e_num))
         print('Navn: ' + self.name)
         print('Sluttid ' + self.sluttid)
-        print('Løype ' + self.løype)
+        print('Løype ' + self.course)
         i = 1
         output = list(zip(self.brikke.codes, self.brikke.legs, self.brikke.times))
         for item in output[:-2]:
@@ -132,31 +119,34 @@ def read_from_database():
 
 
 def main():
+
+    # Her må det leses inn fra serieport. Denne er fikset i "Branch serial"
+
+    # Her må jeg lese inn løyper
+    kartfil = 'course.xml'
+    kartfil = 'trening.xml'
+
+    # courses = mp.fromPurplePen(kartfil)
+    map = mp.fromXml(kartfil)
+
     runners = []
-    # serialport = serial.Serial("/dev/ttyAMA0", 9600, timeout=0.5)
+
     read = True
-
-    #read_database()
-
+    print_codes = False
     while read:
-        # command = serialport.read()
+        command = br215066 #Bytearray fra serial port
 
-        command = br215066
-        print(str(command))
-
-        kartfil = 'course.xml'
-        kartfil = 'trening.xml'
-
-        runners.append(Runner(kartfil, command))
-
-        print_all_codes(runners[-1].kart)
+        runners.append(Runner(map, command))
+        if print_codes:
+            print_all_codes(runners[-1].map) # Denne skal kun brukes når jeg vil vite codene
 
         if runners[-1].check_codes():
-            print('ok')
-            runners[-1].print()
+            print('Bra jobba!')
 
         else:
-            print('Løper mangler poster')
+            print('Du mangler poster')
+
+        runners[-1].print()
 
         read = False
 
