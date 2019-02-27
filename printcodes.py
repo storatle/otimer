@@ -8,14 +8,19 @@ import os
 dir_path = 'C:\\Users\\atlep\\Desktop\\'
 dir_path = './'
 def print_all_codes(kart):
+    s = ''
     with open(dir_path+'codes.txt', 'w') as the_file:
         for course in kart.courses:
             for var in course.variations:
-                s = (str(var.codes).strip('[]'))
-                s = s.replace(',', '')
+                for i in range(0, len(var.codes)):
+                    s = s + str("%.3f" % var.dl[i]) +';'
+                    s = s + str(var.codes[i]) +';'
+
+                    #s = (str(var.codes).strip('[]'))
+                #s = s.replace(',', '')
                 if not var.name:
                     var.name = ''
-                s = course.name + ' ' + var.name + ': ' + s
+                s = course.name + ';' + var.name + ';' + s
                 print(s)
                 the_file.write(s+'\n')
 

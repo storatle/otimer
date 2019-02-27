@@ -42,16 +42,18 @@ class fromXml:
         #Her må jeg legge inn alle controller.
 
         for control in root.iter('Control'):
-            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'normal')))
-            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            self.controls.append(Control((int(control[0].text), float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'normal')))
+            self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for control in root.iter('StartPoint'):
-            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'start')))
-            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            control[0].text = '0'
+            self.controls.append(Control((int(control[0].text), float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'start')))
+            self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for control in root.iter('FinishPoint'):
-            self.controls.append(Control((control[0].text, control[2].attrib.get('x'), control[2].attrib.get('y'), 'finish')))
-            self.controls[-1].set_utm(control[1].attrib.get('x'), control[1].attrib.get('y'))
+            control[0].text = '100' # Setter siste post til kode 100
+            self.controls.append(Control((int(control[0].text), float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'finish')))
+            self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for course in root.iter('Course'):
             self.courses.append(Course((course[1].text, course[0].text)))
@@ -66,14 +68,14 @@ class fromXml:
                     self.variations[-1].set_startpoint(name.text)
 
                 for control in variation.iter('CourseControl'):
+                    #self.variations[-1].set_control([1])
                     self.variations[-1].set_code(control[1].text)
 
                 self.variations[-1].set_code('100')
+            self.variations[-1].set_controls(self.controls)
+            self.variations[-1].set_leg_length()
 
             self.courses[-1].set_variations(self.variations)
-
-
-
 
 
 
@@ -155,6 +157,8 @@ class Variation:
         self.startpoint = None
         self.codes = []
         self.order = []
+        self.controls = []
+        self.dl = []
 
     def set_name(self, name):
         self.name = name
@@ -167,6 +171,25 @@ class Variation:
 
     def set_order(self, order):
         self.order = order
+
+    def set_controls(self, controls):
+        for code in self.codes:
+            for control in controls:
+                if code == int(control.code):
+                    self.controls.append(control)
+                    break
+
+    def set_leg_length(self):
+        self.dl = []
+        scale = 1
+        for i in range(0, len(self.controls)-1):
+            dx = (self.controls[i].x - self.controls[i+1].x)
+            dy = (self.controls[i].y - self.controls[i+1].y)
+
+            self.dl.append(np.sqrt(dx**2 + dy**2)*scale)
+
+    def length(self):
+        return sum(self.dl)
 
 
 class Course:
@@ -254,7 +277,7 @@ class Course:
         self.codes = [int(x) for x in self.codes]
     # Denne bør være i Variations
 
-    def set_leg_length(self, controls):
+    def set_leg_length(self, controls): # Flyttet til vriations
         self.dl = []
         scale = 10
         for i in range(0, len(self.x)-1):
