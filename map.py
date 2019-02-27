@@ -76,6 +76,7 @@ class fromXml:
 
 
 
+
 class fromPurplePen:
 
     def __init__(self, filename):
@@ -251,6 +252,7 @@ class Course:
         del self.codes[0]
         self.codes[-1] = 100
         self.codes = [int(x) for x in self.codes]
+    # Denne bør være i Variations
 
     def set_leg_length(self, controls):
         self.dl = []

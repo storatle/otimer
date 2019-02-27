@@ -6,7 +6,11 @@
 .idea
 *.pdf
 *.ppen
+*.spec
 venv
+build
+dist
+hello.*
 .luckybackup-snapshots
 *.gfw
 __pycahe__
