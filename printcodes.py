@@ -12,16 +12,14 @@ def print_all_codes(kart):
     with open(dir_path+'codes.txt', 'w') as the_file:
         for course in kart.courses:
             for var in course.variations:
+                # course.name;var.name;0;Total_lengde;0;Startkode;lengde;kode....
+                s = course.name + ';' + var.name + ';0;'+str('%.3f' % var.length())+';0;'+'S1;' # Når jeg gjør dette så kan jeg bare ha en start
                 for i in range(0, len(var.codes)):
+                    
                     s = s + str("%.3f" % var.dl[i]) +';'
                     s = s + str(var.codes[i]) +';'
-
-                    #s = (str(var.codes).strip('[]'))
-                #s = s.replace(',', '')
-                if not var.name:
-                    var.name = ''
-                s = course.name + ';' + var.name + ';' + s
-                print(s)
+                s = s[:-1]
+                print(course.name + ' ' + var.name + ' ' + str(var.codes))
                 the_file.write(s+'\n')
 
 def main():
@@ -29,10 +27,8 @@ def main():
     #print(dir_path)
 
     kartfil = dir_path+'course.xml'
-    #kartfil = 'trening.xml'
 
     map = mp.fromXml(kartfil)
     print_all_codes(map)
-
 
 main()

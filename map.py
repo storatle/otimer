@@ -46,21 +46,18 @@ class fromXml:
             self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for control in root.iter('StartPoint'):
-            control[0].text = '0'
-            self.controls.append(Control((int(control[0].text), float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'start')))
+            self.controls.append(Control((control[0].text, float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'start')))
             self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for control in root.iter('FinishPoint'):
-            control[0].text = '100' # Setter siste post til kode 100
-            self.controls.append(Control((int(control[0].text), float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'finish')))
+            self.controls.append(Control((control[0].text, float(control[2].attrib.get('x')), float(control[2].attrib.get('y')), 'finish')))
             self.controls[-1].set_utm(float(control[1].attrib.get('x')), float(control[1].attrib.get('y')))
 
         for course in root.iter('Course'):
             self.courses.append(Course((course[1].text, course[0].text)))
             self.variations = []
             for variation in course.iter('CourseVariation'):
-                self.variations.append(Variation((course[1].text, variation[0].text)))
-                #print(variation[1].text)
+                self.variations.append(Variation((course[0].text, variation[0].text)))
                 for name in variation.iter('Name'):
                     self.variations[-1].set_name(name.text)
 
@@ -68,91 +65,20 @@ class fromXml:
                     self.variations[-1].set_startpoint(name.text)
 
                 for control in variation.iter('CourseControl'):
-                    #self.variations[-1].set_control([1])
                     self.variations[-1].set_code(control[1].text)
 
                 self.variations[-1].set_code('100')
-            self.variations[-1].set_controls(self.controls)
-            self.variations[-1].set_leg_length()
+                self.variations[-1].set_controls(self.controls)
+                self.variations[-1].set_leg_length()
+                self.variations[-1].check_name()
 
             self.courses[-1].set_variations(self.variations)
-
-
-
-class fromPurplePen:
-
-    def __init__(self, filename):
-
-        self.controls = []
-        self.courses = []
-        self.variations = []
-
-        self.read_ppen(filename)
-        self.set_courses()
-
-
-    def read_ppen(self,filename):
-
-        #Henter inn data fra Purple Pen
-        try:
-            tree = ET.parse(filename)
-        except:
-            sys.exit("Oops! Har du riktig Purple Pen-fil (.ppen) i katalogen? ")
-
-        root = tree.getroot()
-
-        #Henter data fra Purple Pen fila
-        for event in root.iter('event'):
-            for map in event.iter('map'):
-                self.scale = map.attrib.get('scale')
-
-        #Leser inn alle postene
-        for ctrl in root.iter('control'):
-            x = None
-            y = None
-            for loc in ctrl.iter('location'):
-                x = loc.attrib.get('x')
-                y = loc.attrib.get('y')
-            self.controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
-
-        # Leser inn løypene
-        for crs in root.iter('course'): # Mulig at jeg bør legge inn dette i en loop
-
-            self.courses.append(Course((crs.attrib.get('id'), crs[0].text)))
-            self.courses[-1].set_first_ctrl(crs[2].attrib.get('course-control'))
-
-            #, crs.attrib.get('kind'), crs.attrib.get('order'), crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
-        order = []
-        for cc in root.iter('course-control'):
-            #variation = []
-            vr = []
-            next = None
-            #Finner neste post
-            for nxt in cc.iter('next'):
-                next = (nxt.get('course-control'))
-            for var in cc.iter('variation'):
-                vr.append(var.get('course-control')) # Sjekker om det er en variation
-
-            if vr:
-                vr = tuple(vr)
-                self.courses[-1].set_loops(vr)
-
-            order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
-
-        self.courses[-1].set_order(order)
-
-    def set_courses(self):
-
-        for course in self.courses:
-            #course.set_order(self.order)
-            course.set_codes(self.controls)
-            course.set_leg_length(self.controls)
 
 class Variation:
 
     def __init__(self, var):
         self.course_id = var[0]
-        self.id = var[1] # Variatin id
+        self.id = var[1] # Variation id
         self.name = None
         self.startpoint = None
         self.codes = []
@@ -160,7 +86,12 @@ class Variation:
         self.controls = []
         self.dl = []
 
+    def check_name(self):
+        if not self.name:
+            self.name = self.course_id
+
     def set_name(self, name):
+
         self.name = name
 
     def set_startpoint(self, name):
@@ -173,6 +104,11 @@ class Variation:
         self.order = order
 
     def set_controls(self, controls):
+        # Finne startkode først
+        for ctrl in controls:
+            if ctrl.kind == 'start':
+                self.controls.append(ctrl)
+                break
         for code in self.codes:
             for control in controls:
                 if code == int(control.code):
@@ -181,7 +117,7 @@ class Variation:
 
     def set_leg_length(self):
         self.dl = []
-        scale = 1
+        scale = 0.01
         for i in range(0, len(self.controls)-1):
             dx = (self.controls[i].x - self.controls[i+1].x)
             dy = (self.controls[i].y - self.controls[i+1].y)
@@ -300,14 +236,23 @@ class Control:
 
     def __init__(self, ctrl):
 
-        self.code = ctrl[0]
+        self.code = ctrl[0] # Her burde jeg endre koden fra string til int
         self.x = ctrl[1]
         self.y = ctrl[2]
         self.kind = ctrl[3]
         self.x_utm = 0
         self.y_utm = 0
         self.id = 0  # .zfill(2)
-        #self.variation =
+        self.name = None
+        self.set_name()
+
+    def set_name(self):
+        if self.kind == 'start':
+            self.name = self.code.replace("TA","")
+            self.code = '0'
+        if self.kind == 'finish':
+            self.name = self.code
+            self.code = '100'
 
     def set_utm(self, x, y):
         self.x_utm = x
@@ -319,8 +264,75 @@ def code_list(order,controls):
     for o in order:
         codes.append(controls[0])
 
+        class fromPurplePen:
 
-# sette samme løype
+            def __init__(self, filename):
+
+                self.controls = []
+                self.courses = []
+                self.variations = []
+
+                self.read_ppen(filename)
+                self.set_courses()
+
+            def read_ppen(self, filename):
+
+                # Henter inn data fra Purple Pen
+                try:
+                    tree = ET.parse(filename)
+                except:
+                    sys.exit("Oops! Har du riktig Purple Pen-fil (.ppen) i katalogen? ")
+
+                root = tree.getroot()
+
+                # Henter data fra Purple Pen fila
+                for event in root.iter('event'):
+                    for map in event.iter('map'):
+                        self.scale = map.attrib.get('scale')
+
+                # Leser inn alle postene
+                for ctrl in root.iter('control'):
+                    x = None
+                    y = None
+                    for loc in ctrl.iter('location'):
+                        x = loc.attrib.get('x')
+                        y = loc.attrib.get('y')
+                    self.controls.append(Control((ctrl.attrib.get('id'), ctrl[0].text, x, y, ctrl.attrib.get('kind'))))
+
+                # Leser inn løypene
+                for crs in root.iter('course'):  # Mulig at jeg bør legge inn dette i en loop
+
+                    self.courses.append(Course((crs.attrib.get('id'), crs[0].text)))
+                    self.courses[-1].set_first_ctrl(crs[2].attrib.get('course-control'))
+
+                    # , crs.attrib.get('kind'), crs.attrib.get('order'), crs[1].attrib.get('label-kind'), crs[2].attrib.get('course-control'))))
+                order = []
+                for cc in root.iter('course-control'):
+                    # variation = []
+                    vr = []
+                    next = None
+                    # Finner neste post
+                    for nxt in cc.iter('next'):
+                        next = (nxt.get('course-control'))
+                    for var in cc.iter('variation'):
+                        vr.append(var.get('course-control'))  # Sjekker om det er en variation
+
+                    if vr:
+                        vr = tuple(vr)
+                        self.courses[-1].set_loops(vr)
+
+                    order.append((cc.attrib.get('id'), next, cc.attrib.get('control'), cc.attrib.get('variation')))
+
+                self.courses[-1].set_order(order)
+
+            def set_courses(self):
+
+                for course in self.courses:
+                    # course.set_order(self.order)
+                    course.set_codes(self.controls)
+                    course.set_leg_length(self.controls)
+
+        # sette samme løype
 # Lage Kodeliste legge på 100 som målpost i lista
 # Finne lendge mellom hver post for å beregne km/tid
 
