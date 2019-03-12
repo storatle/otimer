@@ -13,7 +13,7 @@ def print_all_codes(kart):
         for course in kart.courses:
             for var in course.variations:
                 # course.name;var.name;0;Total_lengde;0;Startkode;lengde;kode....
-                s = course.name + ';' + var.name + ';0;'+str('%.3f' % var.length())+';0;'+'S1;' # Når jeg gjør dette så kan jeg bare ha en start
+                s = course.name + ';'+ course.name +'-'+ var.name + ';0;'+str('%.3f' % var.length())+';0;'+'S1;' # Når jeg gjør dette så kan jeg bare ha en start
                 for i in range(0, len(var.codes)):
                     
                     s = s + str("%.3f" % var.dl[i]) +';'
